@@ -1,0 +1,18 @@
+{
+  "dados_usuario" : {
+    "chave1" : {
+      "nome_envolv" : "Henrique",
+      "valor" : "50.00",
+      "parcela" : "2",
+      "divida" : "0",
+      "date" : "2019/05/27 17:34:11"
+    },
+    "chave2" : {
+      "nome_envolv": "Rodrigo",
+      "valor" : "120.00",
+      "parcela" : "4",
+      "divida" : "1",
+      "date" : "2019/05/27 17:36:18"
+    }
+  }
+}
