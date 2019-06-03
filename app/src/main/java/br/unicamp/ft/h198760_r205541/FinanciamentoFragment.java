@@ -2,9 +2,11 @@ package br.unicamp.ft.h198760_r205541;
 
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,14 +18,19 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import Interfaces.OnEditRequest;
+
+import static android.support.constraint.Constraints.TAG;
 
 
 /**
@@ -48,6 +55,9 @@ public class FinanciamentoFragment extends Fragment {
     public FinanciamentoFragment() {
         // Required empty public constructor
     }
+
+    //criação de um holder p/ reciclerView dos metodos do firebase
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -114,9 +124,32 @@ public class FinanciamentoFragment extends Fragment {
                     String strTerm = String.valueOf(term);
                     String strValue = String.valueOf(value);
 
+                    //Enviar info ao DB
                     Resposta resposta = new Resposta(date, name, strTerm, strValue, type);
                     mFirebaseDatabaseReference.child("Dados_do_Usuario").push().setValue(resposta);
 
+                    //Acessar info do DB
+                    mFirebaseDatabaseReference.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            for (DataSnapshot remoteRespostas : dataSnapshot.getChildren()) {
+                                for (DataSnapshot remoteResposta : remoteRespostas.getChildren()){
+                                    Resposta resposta = remoteResposta.getValue(Resposta.class);
+                                    Log.v("DATASET","Nome: " + resposta.getNome_env()+" - Data: " + resposta.getDate());
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            Log.w(TAG,"Failed to read value.", databaseError.toException());
+                        }
+                    });
+
+                    //consulta por limite de no max. 10
+                    mFirebaseDatabaseReference.limitToLast(10);
+
+                    //inserção antiga
                     if(mAdapter.addItem(value, name, type, term, date)){
                         Toast.makeText(getContext(), "ADD", Toast.LENGTH_SHORT).show();
                         clearEditText();
@@ -129,6 +162,7 @@ public class FinanciamentoFragment extends Fragment {
             }
         });
 
+        //remoçao antiga
         mAdapter.setMyOnLongClickListener(new AdapterDoMal.MyOnLongClickListener() {
             @Override
             public void MyOnLongClick(int position) {
