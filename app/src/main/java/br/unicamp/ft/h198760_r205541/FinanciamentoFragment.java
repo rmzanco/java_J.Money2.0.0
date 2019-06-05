@@ -16,8 +16,12 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.firebase.ui.database.SnapshotParser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -57,7 +61,25 @@ public class FinanciamentoFragment extends Fragment {
     }
 
     //criação de um holder p/ reciclerView dos metodos do firebase
+    public static class RespostaViewHolder extends RecyclerView.ViewHolder{
+        TextView txtValue;
+        TextView txtName;
+        TextView txtType;
+        TextView txtTerm;
+        TextView txtDate;
 
+        public RespostaViewHolder(@NonNull View v) {
+            super(v);
+            txtValue = (TextView) itemView.findViewById(R.id.txtValue);
+            txtName =  (TextView) itemView.findViewById(R.id.txtName);
+            txtType =  (TextView) itemView.findViewById(R.id.txtType);
+            txtTerm =  (TextView) itemView.findViewById(R.id.txtTerm);
+            txtDate =  (TextView) itemView.findViewById(R.id.txtDate);
+        }
+
+    }
+
+    private FirebaseRecyclerAdapter<Resposta, RespostaViewHolder> mFirebaseAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -65,7 +87,7 @@ public class FinanciamentoFragment extends Fragment {
 
         View v = inflater.inflate(R.layout.fragment_financiamento, container, false);
 
-        recyclerView    = v.findViewById(R.id.rvFinanciamentos);
+        //recyclerView    = v.findViewById(R.id.rvFinanciamentos);
         button          = v.findViewById(R.id.btAdd);
         etNome          = v.findViewById(R.id.etNome);
         etValue         = v.findViewById(R.id.etValue);
@@ -74,14 +96,59 @@ public class FinanciamentoFragment extends Fragment {
         spinner         = v.findViewById(R.id.spinner);
 
         mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
+        SnapshotParser<Resposta> parser = new SnapshotParser<Resposta>() {
+            @NonNull
+            @Override
+            public Resposta parseSnapshot(@NonNull DataSnapshot snapshot) {
+                Resposta resposta = snapshot.getValue(Resposta.class);
+                return resposta;
+            }
+        };
+
+        DatabaseReference messagesRef = mFirebaseDatabaseReference.child("Dados_do_Usuario");
+        FirebaseRecyclerOptions<Resposta> options = new FirebaseRecyclerOptions.Builder<Resposta>()
+                .setQuery(messagesRef, parser).build();
+
+        mFirebaseAdapter = new FirebaseRecyclerAdapter<Resposta, RespostaViewHolder>(options) {
+            @Override
+            protected void onBindViewHolder(@NonNull RespostaViewHolder viewHolder, int position, @NonNull Resposta resposta) {
+
+                try {
+                    viewHolder.txtValue.setText(resposta.getValor());
+                    viewHolder.txtName.setText(resposta.getNome_env());
+                    viewHolder.txtType.setText(resposta.getTipo());
+                    viewHolder.txtTerm.setText(resposta.getParcela());
+                    viewHolder.txtDate.setText(resposta.getDate());
+                }catch (NullPointerException err){
+                    err.printStackTrace();
+                    Toast.makeText(getContext(), "Ñ foi possivel resgatar info do db!", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+
+            @NonNull
+            @Override
+            public RespostaViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+                LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
+                return new
+                        RespostaViewHolder(inflater.inflate(R.layout.item_messagem,
+                        viewGroup,false));
+            }
+        };
+
+        LinearLayoutManager llm = new LinearLayoutManager(getActivity());
+        llm.setOrientation((LinearLayoutManager.VERTICAL));
+        RecyclerView mRecycler = ((RecyclerView)v.findViewById(R.id.rvFinanciamentos));
+        mRecycler.setLayoutManager(llm);
+        mRecycler.setAdapter(mFirebaseAdapter);
 
         spinner.setVisibility(View.INVISIBLE);
 
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        //recyclerView.setHasFixedSize(true);
+        //recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        mAdapter = new AdapterDoMal(Financiamentos.financiamentos);
-        recyclerView.setAdapter(mAdapter);
+        //mAdapter = new AdapterDoMal(Financiamentos.financiamentos);
+        //recyclerView.setAdapter(mAdapter);
 
         cbTerm.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -94,7 +161,7 @@ public class FinanciamentoFragment extends Fragment {
             }
         });
 
-        button.setOnClickListener(new View.OnClickListener() {
+        button.setOnClickListener(new View.OnClickListener()  {
             @Override
             public void onClick(View v) {
 
@@ -135,7 +202,13 @@ public class FinanciamentoFragment extends Fragment {
                             for (DataSnapshot remoteRespostas : dataSnapshot.getChildren()) {
                                 for (DataSnapshot remoteResposta : remoteRespostas.getChildren()){
                                     Resposta resposta = remoteResposta.getValue(Resposta.class);
-                                    Log.v("DATASET","Nome: " + resposta.getNome_env()+" - Data: " + resposta.getDate());
+                                    assert resposta != null;
+                                    Log.v("DATASET","Nome: "
+                                            + resposta.getNome_env()
+                                            + " - Valor: "
+                                            + resposta.getValor()
+                                            + " - Data: "
+                                            + resposta.getDate());
                                 }
                             }
                         }
@@ -149,11 +222,11 @@ public class FinanciamentoFragment extends Fragment {
                     //consulta por limite de no max. 10
                     mFirebaseDatabaseReference.limitToLast(10);
 
-                    //inserção antiga
+                   /*  //inserção antiga
                     if(mAdapter.addItem(value, name, type, term, date)){
                         Toast.makeText(getContext(), "ADD", Toast.LENGTH_SHORT).show();
                         clearEditText();
-                    }
+                    } */
 
                 }catch (Exception err){
                     err.printStackTrace();
@@ -162,7 +235,7 @@ public class FinanciamentoFragment extends Fragment {
             }
         });
 
-        //remoçao antiga
+        /* //remoçao antiga
         mAdapter.setMyOnLongClickListener(new AdapterDoMal.MyOnLongClickListener() {
             @Override
             public void MyOnLongClick(int position) {
@@ -171,7 +244,9 @@ public class FinanciamentoFragment extends Fragment {
                 }
             }
         });
+        /*
 
+        /* //Método do adapter antigo (Substituído pelo adapter do firebase)
         mAdapter.setMyOnItemClickListener(new AdapterDoMal.MyOnItemClickListener() {
             @Override
             public void MyOnItemClick(int position) {
@@ -180,6 +255,7 @@ public class FinanciamentoFragment extends Fragment {
                 }
             }
         });
+        */
 
         return v;
     }
@@ -193,4 +269,14 @@ public class FinanciamentoFragment extends Fragment {
         etNome.getText().clear();
     }
 
+    public void onPause(){
+        mFirebaseAdapter.stopListening();
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mFirebaseAdapter.startListening();
+    }
 }
