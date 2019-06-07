@@ -22,6 +22,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import static android.support.constraint.Constraints.TAG;
@@ -43,6 +44,7 @@ public class SearchFragment extends Fragment {
 
     Financiamento current;
 
+    private Query mFirebaseQuery;
     private DatabaseReference mFirebaseDatabaseReference;
     private FirebaseRecyclerAdapter<Resposta, SearchViewHolder> mFirebaseAdapter;
 
@@ -78,7 +80,6 @@ public class SearchFragment extends Fragment {
         button      = v.findViewById(R.id.btSearch);
         tvStatus    = v.findViewById(R.id.tvStatus);
         tvResult    = v.findViewById(R.id.tvResult);
-        rvSearch    = v.findViewById(R.id.rvSearch);
 
         SnapshotParser<Resposta> parser = new SnapshotParser<Resposta>() {
             @NonNull
@@ -90,9 +91,10 @@ public class SearchFragment extends Fragment {
         };
 
         DatabaseReference messagesRef = mFirebaseDatabaseReference.child("Dados_do_Usuario");
-        FirebaseRecyclerOptions<Resposta> options =
+        final FirebaseRecyclerOptions<Resposta> options =
                 new FirebaseRecyclerOptions.Builder<Resposta>().setQuery(messagesRef,parser)
-                .build();
+                        .build();
+
         mFirebaseAdapter = new FirebaseRecyclerAdapter<Resposta, SearchViewHolder>(options) {
             @Override
             protected void onBindViewHolder(final SearchViewHolder viewHolder, int position, Resposta resposta) {
@@ -149,7 +151,51 @@ public class SearchFragment extends Fragment {
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View v1) {
+
+                try { //ARRUMAR CONSULTA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+                    nameToSearch = etSearch.getText().toString().toLowerCase();
+                    Toast.makeText(getContext(), "Pesquisando no DB por " + nameToSearch, Toast.LENGTH_SHORT).show();
+
+                    mFirebaseQuery = (Query) mFirebaseDatabaseReference.child("Dados_do_Usuario")
+                            .orderByChild("nome_env").equalTo(nameToSearch).limitToFirst(1);
+                    mFirebaseQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            mFirebaseAdapter = new FirebaseRecyclerAdapter<Resposta, SearchViewHolder>(options) {
+                                @Override
+                                protected void onBindViewHolder(@NonNull SearchViewHolder viewHolder, int position, @NonNull Resposta resposta) {
+                                    viewHolder.txtValue.setText(resposta.getValor());
+                                    viewHolder.txtName.setText(resposta.getNome_env());
+                                    viewHolder.txtType.setText(resposta.getTipo());
+                                    viewHolder.txtTerm.setText(resposta.getParcela());
+                                    viewHolder.txtDate.setText(resposta.getDate());
+                                }
+
+                                @NonNull
+                                @Override
+                                public SearchViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+                                    LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
+                                    return new SearchViewHolder(inflater.inflate(R.layout.item_messagem,
+                                            viewGroup,false));
+                                }
+                            };
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                            Log.w(TAG,"Failed to read value.", databaseError.toException());
+                        }
+                    });
+
+
+                }catch (Exception err){
+                    err.printStackTrace();
+                    Toast.makeText(getContext(), "NOME INVALIDO!", Toast.LENGTH_SHORT).show();
+                }
+
+
 
                 //1º Passo - Atualizar base atual
                 //2º Passo - Listar dados da sabe (usar mesma xml da recycler)

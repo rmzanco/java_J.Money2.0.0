@@ -108,7 +108,7 @@ public class FinanciamentoFragment extends Fragment {
 
         mFirebaseAdapter = new FirebaseRecyclerAdapter<Resposta, RespostaViewHolder>(options) {
             @Override
-            protected void onBindViewHolder(@NonNull RespostaViewHolder viewHolder, int position, @NonNull Resposta resposta) {
+            protected void onBindViewHolder(RespostaViewHolder viewHolder, int position, @NonNull Resposta resposta) {
 
                 try {
                     viewHolder.txtValue.setText(resposta.getValor());
@@ -125,7 +125,7 @@ public class FinanciamentoFragment extends Fragment {
 
             @NonNull
             @Override
-            public RespostaViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+            public RespostaViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
                 LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
                 return new
                         RespostaViewHolder(inflater.inflate(R.layout.item_messagem,
