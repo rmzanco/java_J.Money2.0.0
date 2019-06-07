@@ -25,15 +25,23 @@
             android:text="buscar"/>
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Mostrando todos os resultados" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rvSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+
 
     <TextView
         android:id="@+id/tvResult"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:textAlignment="center"/>
-
-
-
-
+        android:layout_height="wrap_content"
+        android:textAlignment="center" />
 
 </LinearLayout>

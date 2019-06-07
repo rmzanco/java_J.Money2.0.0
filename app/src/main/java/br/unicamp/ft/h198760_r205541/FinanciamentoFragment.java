@@ -36,14 +36,11 @@ import Interfaces.OnEditRequest;
 
 import static android.support.constraint.Constraints.TAG;
 
-
 /**
  * A simple {@link Fragment} subclass.
  */
 public class FinanciamentoFragment extends Fragment {
 
-
-    private RecyclerView    recyclerView;
     private Button          button;
     private EditText        etNome;
     private EditText        etValue;
@@ -51,7 +48,8 @@ public class FinanciamentoFragment extends Fragment {
     private CheckBox        cbTerm;
     private Spinner         spinner;
 
-    private AdapterDoMal mAdapter;
+    //adapter antigo + interface - declaração
+    //private AdapterDoMal mAdapter;
     private OnEditRequest onEditRequest;
 
     private DatabaseReference mFirebaseDatabaseReference;
@@ -87,7 +85,6 @@ public class FinanciamentoFragment extends Fragment {
 
         View v = inflater.inflate(R.layout.fragment_financiamento, container, false);
 
-        //recyclerView    = v.findViewById(R.id.rvFinanciamentos);
         button          = v.findViewById(R.id.btAdd);
         etNome          = v.findViewById(R.id.etNome);
         etValue         = v.findViewById(R.id.etValue);
@@ -161,7 +158,7 @@ public class FinanciamentoFragment extends Fragment {
             }
         });
 
-        button.setOnClickListener(new View.OnClickListener()  {
+        button.setOnClickListener(  new View.OnClickListener()  {
             @Override
             public void onClick(View v) {
 
@@ -260,9 +257,12 @@ public class FinanciamentoFragment extends Fragment {
         return v;
     }
 
+
+     //metodo antigo p/ instanciar a interface java
     public void setOnEditRequest(OnEditRequest onEditRequest){
         this.onEditRequest = onEditRequest;
     }
+
 
     public void clearEditText(){
         etValue.getText().clear();
