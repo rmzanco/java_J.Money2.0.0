@@ -37,7 +37,6 @@ public class SearchFragment extends Fragment {
     private Button button;
     private TextView tvStatus;
     private TextView tvResult;
-    private RecyclerView rvSearch;
 
     private String nameToSearch;
     private String result = "";
@@ -73,7 +72,7 @@ public class SearchFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View v = inflater.inflate(R.layout.fragment_search, container, false);
+        final View v = inflater.inflate(R.layout.fragment_search, container, false);
 
         mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
         etSearch    = v.findViewById(R.id.etSearch);
@@ -120,9 +119,9 @@ public class SearchFragment extends Fragment {
 
         LinearLayoutManager llm = new LinearLayoutManager(getActivity());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
-        RecyclerView mRecycler = (RecyclerView)v.findViewById(R.id.rvSearch);
-        mRecycler.setLayoutManager(llm);
-        mRecycler.setAdapter(mFirebaseAdapter);
+        final RecyclerView rvSearch = (RecyclerView)v.findViewById(R.id.rvSearch);
+        rvSearch.setLayoutManager(llm);
+        rvSearch.setAdapter(mFirebaseAdapter);
 
         //Resposta resposta = new Resposta(date, name, strTerm, strValue, type);
         //mFirebaseDatabaseReference.child("Dados_do_Usuario").push().setValue(resposta);
@@ -133,6 +132,7 @@ public class SearchFragment extends Fragment {
                 for(DataSnapshot remote1 : dataSnapshot.getChildren()){
                     for(DataSnapshot remote2 : remote1.getChildren()){
                         Resposta resposta = remote2.getValue(Resposta.class);
+                        assert resposta != null;
                         Log.v("DATASET","Nome: "
                                 + resposta.getNome_env()
                                 + " - Valor: "
@@ -163,6 +163,11 @@ public class SearchFragment extends Fragment {
                     mFirebaseQuery.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            tvStatus.setText(String.format("procurando por: %s", nameToSearch));
+                            tvResult.setText(String.valueOf(mFirebaseQuery));
+
+
+
                             mFirebaseAdapter = new FirebaseRecyclerAdapter<Resposta, SearchViewHolder>(options) {
                                 @Override
                                 protected void onBindViewHolder(@NonNull SearchViewHolder viewHolder, int position, @NonNull Resposta resposta) {
@@ -181,6 +186,13 @@ public class SearchFragment extends Fragment {
                                             viewGroup,false));
                                 }
                             };
+
+                            LinearLayoutManager llm = new LinearLayoutManager(getActivity());
+                            llm.setOrientation(LinearLayoutManager.VERTICAL);
+                            RecyclerView rvSearch = (RecyclerView)v.findViewById(R.id.rvSearch);
+                            rvSearch.setLayoutManager(llm);
+                            rvSearch.setAdapter(mFirebaseAdapter);
+
                         }
 
                         @Override
@@ -226,7 +238,6 @@ public class SearchFragment extends Fragment {
                 result = "";
 
                 */
-
 
             }
         });

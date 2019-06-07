@@ -222,8 +222,9 @@ public class FinanciamentoFragment extends Fragment {
                    /*  //inserção antiga
                     if(mAdapter.addItem(value, name, type, term, date)){
                         Toast.makeText(getContext(), "ADD", Toast.LENGTH_SHORT).show();
-                        clearEditText();
                     } */
+
+                    clearEditText(); Toast.makeText(getContext(), "Adicionado", Toast.LENGTH_SHORT).show();
 
                 }catch (Exception err){
                     err.printStackTrace();
