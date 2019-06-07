@@ -1,17 +1,17 @@
 {
-  "dados_usuario" : {
+  "Dados_do_Usuario" : {
     "chave1" : {
-      "nome_envolv" : "Henrique",
       "valor" : "50.00",
+      "nome_envolv" : "Henrique",
       "parcela" : "2",
-      "divida" : "0",
+      "tipo" : "divida",
       "date" : "2019/05/27 17:34:11"
     },
     "chave2" : {
-      "nome_envolv": "Rodrigo",
       "valor" : "120.00",
+      "nome_envolv": "Rodrigo",
       "parcela" : "4",
-      "divida" : "1",
+      "tipo" : "emprestimo",
       "date" : "2019/05/27 17:36:18"
     }
   }
