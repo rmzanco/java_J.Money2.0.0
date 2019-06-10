@@ -13,7 +13,7 @@
         android:textStyle="bold"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="40dp"
-        android:text="Faz login plz"/>
+        android:text="Faça o login com a conta do Google."/>
 
     <com.google.android.gms.common.SignInButton
         android:id="@+id/sign_in_button"

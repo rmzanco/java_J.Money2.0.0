@@ -2,11 +2,15 @@ package br.unicamp.ft.h198760_r205541;
 
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.firebase.ui.database.SnapshotParser;
+import com.google.firebase.database.DataSnapshot;
 
 
 /**
@@ -33,13 +37,14 @@ public class ReportFragment extends Fragment {
 
         tvReport = v.findViewById(R.id.tvReport);
 
-        for(int i = 0; i < Financiamentos.financiamentos.size(); i++){
-            if(Financiamentos.financiamentos.get(i).getType().equals("divida")){
-                divida -= Financiamentos.financiamentos.get(i).getValue();
-            }else {
-                emprestimo += Financiamentos.financiamentos.get(i).getValue();
+        final SnapshotParser<Financiamento> parser = new SnapshotParser<Financiamento>() {
+            @NonNull
+            @Override
+            public Financiamento parseSnapshot(@NonNull DataSnapshot snapshot) {
+
+                return null;
             }
-        }
+        };
 
         report = emprestimo+divida;
 

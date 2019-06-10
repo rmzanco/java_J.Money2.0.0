@@ -1,6 +1,5 @@
 package br.unicamp.ft.h198760_r205541;
 
-
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -12,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,7 +27,6 @@ import com.google.firebase.database.ValueEventListener;
 
 import static android.support.constraint.Constraints.TAG;
 
-
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -37,15 +36,13 @@ public class SearchFragment extends Fragment {
     private Button button;
     private TextView tvStatus;
     private TextView tvResult;
+    private RecyclerView rvSearch;
 
     private String nameToSearch;
     private String result = "";
 
-    Financiamento current;
-
-    private Query mFirebaseQuery;
     private DatabaseReference mFirebaseDatabaseReference;
-    private FirebaseRecyclerAdapter<Resposta, SearchViewHolder> mFirebaseAdapter;
+    private FirebaseRecyclerAdapter<Financiamento, SearchViewHolder> mFirebaseAdapter;
 
     public static class SearchViewHolder extends RecyclerView.ViewHolder{
         TextView txtValue;
@@ -53,6 +50,7 @@ public class SearchFragment extends Fragment {
         TextView txtType;
         TextView txtTerm;
         TextView txtDate;
+        ImageView imageView;
 
         public SearchViewHolder(View v){
             super(v);
@@ -61,6 +59,7 @@ public class SearchFragment extends Fragment {
             txtType =  (TextView) itemView.findViewById(R.id.txtType);
             txtTerm =  (TextView) itemView.findViewById(R.id.txtTerm);
             txtDate =  (TextView) itemView.findViewById(R.id.txtDate);
+            imageView = v.findViewById(R.id.image);
         }
     }
 
@@ -80,29 +79,49 @@ public class SearchFragment extends Fragment {
         tvStatus    = v.findViewById(R.id.tvStatus);
         tvResult    = v.findViewById(R.id.tvResult);
 
-        SnapshotParser<Resposta> parser = new SnapshotParser<Resposta>() {
+        SnapshotParser<Financiamento> parser = new SnapshotParser<Financiamento>() {
             @NonNull
             @Override
-            public Resposta parseSnapshot(@NonNull DataSnapshot dataSnapshot) {
-                Resposta resposta = dataSnapshot.getValue(Resposta.class);
-                return resposta;
+            public Financiamento parseSnapshot(@NonNull DataSnapshot dataSnapshot) {
+                Financiamento financiamento = dataSnapshot.getValue(Financiamento.class);
+                return financiamento;
             }
         };
 
         DatabaseReference messagesRef = mFirebaseDatabaseReference.child("Dados_do_Usuario");
-        final FirebaseRecyclerOptions<Resposta> options =
-                new FirebaseRecyclerOptions.Builder<Resposta>().setQuery(messagesRef,parser)
+        final FirebaseRecyclerOptions<Financiamento> options =
+                new FirebaseRecyclerOptions.Builder<Financiamento>().setQuery(messagesRef,parser)
                         .build();
 
-        mFirebaseAdapter = new FirebaseRecyclerAdapter<Resposta, SearchViewHolder>(options) {
+        mFirebaseAdapter = new FirebaseRecyclerAdapter<Financiamento, SearchViewHolder>(options) {
             @Override
-            protected void onBindViewHolder(final SearchViewHolder viewHolder, int position, Resposta resposta) {
+            protected void onBindViewHolder(final SearchViewHolder viewHolder, int position, Financiamento financiamento) {
                 try {
-                    viewHolder.txtValue.setText(resposta.getValor());
-                    viewHolder.txtName.setText(resposta.getNome_env());
-                    viewHolder.txtType.setText(resposta.getTipo());
-                    viewHolder.txtTerm.setText(resposta.getParcela());
-                    viewHolder.txtDate.setText(resposta.getDate());
+                    try {
+                        viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                            @Override
+                            public boolean onLongClick(View v) {
+                                mFirebaseAdapter.getSnapshots().getSnapshot(viewHolder.getAdapterPosition()).getRef().removeValue();
+                                notifyItemRemoved(viewHolder.getAdapterPosition());
+                                notifyDataSetChanged();
+                                return true;
+                            }
+                        });
+                    } catch (IndexOutOfBoundsException e) {
+                        Toast.makeText(getContext(), "Erro ao deletar!", Toast.LENGTH_SHORT).show();
+                    }
+                    viewHolder.txtValue.setText(financiamento.getValor());
+                    viewHolder.txtName.setText(financiamento.getNome_env());
+                    viewHolder.txtType.setText(financiamento.getTipo());
+                    viewHolder.txtTerm.setText(financiamento.getParcela());
+                    viewHolder.txtDate.setText(financiamento.getDate());
+
+                    if(financiamento.getTipo().equalsIgnoreCase("divida")){
+                        viewHolder.imageView.setImageResource(R.drawable.ic_action_divida);
+                    }else {
+                        viewHolder.imageView.setImageResource(R.drawable.ic_action_emprestimo);
+                    }
+
                 }catch (NullPointerException err){
                     err.printStackTrace();
                     Toast.makeText(getContext(), "Ñ foi possivel resgatar info do db!", Toast.LENGTH_SHORT).show();
@@ -119,26 +138,23 @@ public class SearchFragment extends Fragment {
 
         LinearLayoutManager llm = new LinearLayoutManager(getActivity());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
-        final RecyclerView rvSearch = (RecyclerView)v.findViewById(R.id.rvSearch);
+        rvSearch = (RecyclerView)v.findViewById(R.id.rvSearch);
         rvSearch.setLayoutManager(llm);
         rvSearch.setAdapter(mFirebaseAdapter);
-
-        //Resposta resposta = new Resposta(date, name, strTerm, strValue, type);
-        //mFirebaseDatabaseReference.child("Dados_do_Usuario").push().setValue(resposta);
 
         mFirebaseDatabaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for(DataSnapshot remote1 : dataSnapshot.getChildren()){
                     for(DataSnapshot remote2 : remote1.getChildren()){
-                        Resposta resposta = remote2.getValue(Resposta.class);
-                        assert resposta != null;
+                        Financiamento financiamento = remote2.getValue(Financiamento.class);
+                        assert financiamento != null;
                         Log.v("DATASET","Nome: "
-                                + resposta.getNome_env()
+                                + financiamento.getNome_env()
                                 + " - Valor: "
-                                + resposta.getValor()
+                                + financiamento.getValor()
                                 + " - Data: "
-                                + resposta.getDate());
+                                + financiamento.getDate());
                     }
                 }
             }
@@ -153,96 +169,62 @@ public class SearchFragment extends Fragment {
             @Override
             public void onClick(View v1) {
 
-                try { //ARRUMAR CONSULTA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                try {
 
                     nameToSearch = etSearch.getText().toString().toLowerCase();
                     Toast.makeText(getContext(), "Pesquisando no DB por " + nameToSearch, Toast.LENGTH_SHORT).show();
 
-                    mFirebaseQuery = (Query) mFirebaseDatabaseReference.child("Dados_do_Usuario")
-                            .orderByChild("nome_env").equalTo(nameToSearch).limitToFirst(1);
-                    mFirebaseQuery.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            tvStatus.setText(String.format("procurando por: %s", nameToSearch));
-                            tvResult.setText(String.valueOf(mFirebaseQuery));
+                    tvStatus.setText(String.format("procurando por: %s", nameToSearch));
+                    tvResult.setText(String.valueOf(nameToSearch));
 
-
-
-                            mFirebaseAdapter = new FirebaseRecyclerAdapter<Resposta, SearchViewHolder>(options) {
-                                @Override
-                                protected void onBindViewHolder(@NonNull SearchViewHolder viewHolder, int position, @NonNull Resposta resposta) {
-                                    viewHolder.txtValue.setText(resposta.getValor());
-                                    viewHolder.txtName.setText(resposta.getNome_env());
-                                    viewHolder.txtType.setText(resposta.getTipo());
-                                    viewHolder.txtTerm.setText(resposta.getParcela());
-                                    viewHolder.txtDate.setText(resposta.getDate());
-                                }
-
-                                @NonNull
-                                @Override
-                                public SearchViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-                                    LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
-                                    return new SearchViewHolder(inflater.inflate(R.layout.item_messagem,
-                                            viewGroup,false));
-                                }
-                            };
-
-                            LinearLayoutManager llm = new LinearLayoutManager(getActivity());
-                            llm.setOrientation(LinearLayoutManager.VERTICAL);
-                            RecyclerView rvSearch = (RecyclerView)v.findViewById(R.id.rvSearch);
-                            rvSearch.setLayoutManager(llm);
-                            rvSearch.setAdapter(mFirebaseAdapter);
-
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-                            Log.w(TAG,"Failed to read value.", databaseError.toException());
-                        }
-                    });
-
+                    firebaseSearch(nameToSearch);
 
                 }catch (Exception err){
                     err.printStackTrace();
                     Toast.makeText(getContext(), "NOME INVALIDO!", Toast.LENGTH_SHORT).show();
                 }
 
-
-
-                //1º Passo - Atualizar base atual
-                //2º Passo - Listar dados da sabe (usar mesma xml da recycler)
-
-                /* //Consulta antiga
-                nameToSearch = etSearch.getText().toString().toLowerCase();
-
-                for (int i = 0; i < Financiamentos.financiamentos.size(); i++){
-
-                    current = Financiamentos.financiamentos.get(i);
-
-                    if(nameToSearch.equals(current.getName())){
-                        result += String.valueOf(current.getValue()) + "\n";
-                        result += String.valueOf(current.getTerm()) + "\n";
-                        result += current.getName() + "\n";
-                        result += current.getTerm();
-
-                        tvResult.setText(result);
-
-                        break;
-                    }
-                }
-
-                if(result.equals("")){
-                    tvResult.setText("404 Not Found");
-                }
-
-                result = "";
-
-                */
-
             }
         });
 
         return v;
+    }
+
+    //search data
+    private void firebaseSearch(String searchText){
+        Query firebaseSearchQuery = mFirebaseDatabaseReference.orderByChild("nome_env")
+                .startAt(searchText).endAt(searchText + "\uf8ff");
+
+        FirebaseRecyclerOptions<Financiamento> options =
+                new FirebaseRecyclerOptions.Builder<Financiamento>()
+                .setQuery(firebaseSearchQuery, Financiamento.class)
+                .build();
+
+        FirebaseRecyclerAdapter<Financiamento,SearchViewHolder> firebaseRecyclerAdapter =
+                new FirebaseRecyclerAdapter<Financiamento, SearchViewHolder>(options) {
+                    @Override
+                    protected void onBindViewHolder(final SearchViewHolder viewHolder,
+                                                    int position,
+                                                    Financiamento resposta) {
+
+
+                        viewHolder.txtValue.setText(resposta.getValor());
+                        viewHolder.txtName.setText(resposta.getNome_env());
+                        viewHolder.txtType.setText(resposta.getTipo());
+                        viewHolder.txtTerm.setText(resposta.getParcela());
+                        viewHolder.txtDate.setText(resposta.getDate());
+                    }
+
+                    @NonNull
+                    @Override
+                    public SearchViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+                        LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
+                        return new SearchViewHolder(inflater.inflate(R.layout.item_messagem,
+                                viewGroup,false));
+                    }
+                };
+
+        rvSearch.setAdapter(firebaseRecyclerAdapter);
     }
 
     @Override

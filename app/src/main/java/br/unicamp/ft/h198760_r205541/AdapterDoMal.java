@@ -8,15 +8,16 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import java.util.ArrayList;
 
+//ADAPTER UTILIZADO ANTES DA IMPLEMENTAÇÃO DO FIREBASE
 public class AdapterDoMal extends RecyclerView.Adapter {
 
-    private ArrayList<Financiamento> financiamentoArrayList;
+    private ArrayList<Finan2> finan2ArrayList;
     private MyOnLongClickListener myOnLongClickListener;
     private MyOnItemClickListener myOnItemClickListener;
     private int currentPos;
 
-    public AdapterDoMal(ArrayList<Financiamento> financiamentoArrayList) {
-        this.financiamentoArrayList = financiamentoArrayList;
+    public AdapterDoMal(ArrayList<Finan2> finan2ArrayList) {
+        this.finan2ArrayList = finan2ArrayList;
     }
 
     @NonNull
@@ -51,12 +52,12 @@ public class AdapterDoMal extends RecyclerView.Adapter {
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, int i) {
-        ((ViewHolderDoMal)viewHolder).bind(financiamentoArrayList.get(i), i);
+        ((ViewHolderDoMal)viewHolder).bind(finan2ArrayList.get(i), i);
     }
 
     @Override
     public int getItemCount() {
-        return financiamentoArrayList.size();
+        return finan2ArrayList.size();
     }
 
     public class ViewHolderDoMal extends RecyclerView.ViewHolder{
@@ -79,13 +80,13 @@ public class AdapterDoMal extends RecyclerView.Adapter {
         }
 
 
-        public void bind(Financiamento financiamento, int pos){
+        public void bind(Finan2 finan2, int pos){
 
-            textViewValue.setText(String.valueOf(financiamento.getValue()));
-            textViewTerm.setText(String.valueOf(financiamento.getTerm()));
-            textViewName.setText(financiamento.getName());
-            textViewType.setText(financiamento.getType());
-            textViewDate.setText(financiamento.getDate());
+            textViewValue.setText(String.valueOf(finan2.getValue()));
+            textViewTerm.setText(String.valueOf(finan2.getTerm()));
+            textViewName.setText(finan2.getName());
+            textViewType.setText(finan2.getType());
+            textViewDate.setText(finan2.getDate());
             this.position = pos;
         }
 
@@ -97,7 +98,7 @@ public class AdapterDoMal extends RecyclerView.Adapter {
 
     public boolean addItem(double value, String name, String type, int term, String date){
         try{
-            financiamentoArrayList.add(new Financiamento(value, name, type, term, date));
+            finan2ArrayList.add(new Finan2(value, name, type, term, date));
             notifyDataSetChanged();
         }catch (Exception err){
             err.printStackTrace();
@@ -108,7 +109,7 @@ public class AdapterDoMal extends RecyclerView.Adapter {
 
     public boolean removeItem(int position){
         try{
-            financiamentoArrayList.remove(position);
+            finan2ArrayList.remove(position);
             notifyItemRemoved(position);
             return true;
         }catch (Exception err){

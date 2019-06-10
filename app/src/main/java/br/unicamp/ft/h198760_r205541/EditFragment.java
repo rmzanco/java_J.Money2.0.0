@@ -20,7 +20,7 @@ public class EditFragment extends Fragment {
 
     View v;
 
-    private Financiamento financiamento;
+    private Finan2 finan2;
     private int position;
 
     private Button button;
@@ -52,13 +52,13 @@ public class EditFragment extends Fragment {
             public void onClick(View v) {
                 try{
 
-                    financiamento.setName(etNome.getText().toString());
-                    financiamento.setValue(Double.parseDouble(etValue.getText().toString()));
+                    finan2.setName(etNome.getText().toString());
+                    finan2.setValue(Double.parseDouble(etValue.getText().toString()));
 
                     if (rgType.getCheckedRadioButtonId() == R.id.rbDividaEdit){
-                        financiamento.setType("divida");
+                        finan2.setType("divida");
                     }else{
-                        financiamento.setType("emprestimo");
+                        finan2.setType("emprestimo");
                     }
 
                     Toast.makeText(getContext(), "ATUALIZADO", Toast.LENGTH_SHORT).show();
@@ -80,12 +80,12 @@ public class EditFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
-        financiamento = Financiamentos.financiamentos.get(position);
+        finan2 = Financiamentos.finan2s.get(position);
 
-        etNome.setText(financiamento.getName());
-        etValue.setText(String.valueOf(financiamento.getValue()));
+        etNome.setText(finan2.getName());
+        etValue.setText(String.valueOf(finan2.getValue()));
 
-        if(financiamento.getType().equals("divida")){
+        if(finan2.getType().equals("divida")){
             rbDivida.toggle();
         }else{
             rbEmprestimo.toggle();

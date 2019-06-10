@@ -4,6 +4,6 @@ import java.util.ArrayList;
 
 public class Financiamentos {
 
-    public static ArrayList<Financiamento> financiamentos = new ArrayList<>();
+    public static ArrayList<Finan2> finan2s = new ArrayList<>();
 
 }

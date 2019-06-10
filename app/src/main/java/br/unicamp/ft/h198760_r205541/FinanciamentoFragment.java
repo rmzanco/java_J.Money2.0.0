@@ -1,6 +1,5 @@
 package br.unicamp.ft.h198760_r205541;
 
-
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -14,6 +13,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -47,6 +47,7 @@ public class FinanciamentoFragment extends Fragment {
     private RadioGroup      rgType;
     private CheckBox        cbTerm;
     private Spinner         spinner;
+    private ImageView       imageView;
 
     //adapter antigo + interface - declaração
     //private AdapterDoMal mAdapter;
@@ -59,25 +60,28 @@ public class FinanciamentoFragment extends Fragment {
     }
 
     //criação de um holder p/ reciclerView dos metodos do firebase
-    public static class RespostaViewHolder extends RecyclerView.ViewHolder{
+    public static class FinancimentoViewHolder extends RecyclerView.ViewHolder{
         TextView txtValue;
         TextView txtName;
         TextView txtType;
         TextView txtTerm;
         TextView txtDate;
+        ImageView imageView;
 
-        public RespostaViewHolder(@NonNull View v) {
+        public FinancimentoViewHolder(@NonNull View v) {
             super(v);
             txtValue = (TextView) itemView.findViewById(R.id.txtValue);
             txtName =  (TextView) itemView.findViewById(R.id.txtName);
             txtType =  (TextView) itemView.findViewById(R.id.txtType);
             txtTerm =  (TextView) itemView.findViewById(R.id.txtTerm);
             txtDate =  (TextView) itemView.findViewById(R.id.txtDate);
+            imageView = v.findViewById(R.id.image);
+
         }
 
     }
 
-    private FirebaseRecyclerAdapter<Resposta, RespostaViewHolder> mFirebaseAdapter;
+    private FirebaseRecyclerAdapter<Financiamento, FinancimentoViewHolder> mFirebaseAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -93,29 +97,52 @@ public class FinanciamentoFragment extends Fragment {
         spinner         = v.findViewById(R.id.spinner);
 
         mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
-        SnapshotParser<Resposta> parser = new SnapshotParser<Resposta>() {
+        SnapshotParser<Financiamento> parser = new SnapshotParser<Financiamento>() {
             @NonNull
             @Override
-            public Resposta parseSnapshot(@NonNull DataSnapshot snapshot) {
-                Resposta resposta = snapshot.getValue(Resposta.class);
-                return resposta;
+            public Financiamento parseSnapshot(@NonNull DataSnapshot snapshot) {
+                Financiamento financiamento = snapshot.getValue(Financiamento.class);
+                return financiamento;
             }
         };
 
         DatabaseReference messagesRef = mFirebaseDatabaseReference.child("Dados_do_Usuario");
-        FirebaseRecyclerOptions<Resposta> options = new FirebaseRecyclerOptions.Builder<Resposta>()
+        FirebaseRecyclerOptions<Financiamento> options = new FirebaseRecyclerOptions.Builder<Financiamento>()
                 .setQuery(messagesRef, parser).build();
 
-        mFirebaseAdapter = new FirebaseRecyclerAdapter<Resposta, RespostaViewHolder>(options) {
+        mFirebaseAdapter = new FirebaseRecyclerAdapter<Financiamento, FinancimentoViewHolder>(options) {
             @Override
-            protected void onBindViewHolder(RespostaViewHolder viewHolder, int position, @NonNull Resposta resposta) {
+            protected void onBindViewHolder(final FinancimentoViewHolder viewHolder, int position, @NonNull Financiamento financiamento) {
 
                 try {
-                    viewHolder.txtValue.setText(resposta.getValor());
-                    viewHolder.txtName.setText(resposta.getNome_env());
-                    viewHolder.txtType.setText(resposta.getTipo());
-                    viewHolder.txtTerm.setText(resposta.getParcela());
-                    viewHolder.txtDate.setText(resposta.getDate());
+
+                    try {
+                        viewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                            @Override
+                            public boolean onLongClick(View v) {
+                                mFirebaseAdapter.getSnapshots().getSnapshot(viewHolder.getAdapterPosition()).getRef().removeValue();
+                                notifyItemRemoved(viewHolder.getAdapterPosition());
+                                notifyDataSetChanged();
+                                return true;
+                            }
+                        });
+                    } catch (IndexOutOfBoundsException e) {
+                        Toast.makeText(getContext(), "Erro", Toast.LENGTH_SHORT).show();
+                    }
+
+                    viewHolder.txtValue.setText(financiamento.getValor());
+                    viewHolder.txtName.setText(financiamento.getNome_env());
+                    viewHolder.txtType.setText(financiamento.getTipo());
+                    viewHolder.txtTerm.setText(financiamento.getParcela());
+                    viewHolder.txtDate.setText(financiamento.getDate());
+
+                    if(financiamento.getTipo().equalsIgnoreCase("divida")){
+                        viewHolder.imageView.setImageResource(R.drawable.ic_action_divida);
+                    }else {
+                        viewHolder.imageView.setImageResource(R.drawable.ic_action_emprestimo);
+                    }
+
+
                 }catch (NullPointerException err){
                     err.printStackTrace();
                     Toast.makeText(getContext(), "Ñ foi possivel resgatar info do db!", Toast.LENGTH_SHORT).show();
@@ -125,10 +152,10 @@ public class FinanciamentoFragment extends Fragment {
 
             @NonNull
             @Override
-            public RespostaViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+            public FinancimentoViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
                 LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
                 return new
-                        RespostaViewHolder(inflater.inflate(R.layout.item_messagem,
+                        FinancimentoViewHolder(inflater.inflate(R.layout.item_messagem,
                         viewGroup,false));
             }
         };
@@ -144,7 +171,7 @@ public class FinanciamentoFragment extends Fragment {
         //recyclerView.setHasFixedSize(true);
         //recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        //mAdapter = new AdapterDoMal(Financiamentos.financiamentos);
+        //mAdapter = new AdapterDoMal(Financiamentos.finan2s);
         //recyclerView.setAdapter(mAdapter);
 
         cbTerm.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -189,8 +216,8 @@ public class FinanciamentoFragment extends Fragment {
                     String strValue = String.valueOf(value);
 
                     //Enviar info ao DB
-                    Resposta resposta = new Resposta(date, name, strTerm, strValue, type);
-                    mFirebaseDatabaseReference.child("Dados_do_Usuario").push().setValue(resposta);
+                    Financiamento financiamento = new Financiamento(date, name, strTerm, strValue, type);
+                    mFirebaseDatabaseReference.child("Dados_do_Usuario").push().setValue(financiamento);
 
                     //Acessar info do DB
                     mFirebaseDatabaseReference.addValueEventListener(new ValueEventListener() {
@@ -198,14 +225,14 @@ public class FinanciamentoFragment extends Fragment {
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                             for (DataSnapshot remoteRespostas : dataSnapshot.getChildren()) {
                                 for (DataSnapshot remoteResposta : remoteRespostas.getChildren()){
-                                    Resposta resposta = remoteResposta.getValue(Resposta.class);
-                                    assert resposta != null;
+                                    Financiamento financiamento = remoteResposta.getValue(Financiamento.class);
+                                    assert financiamento != null;
                                     Log.v("DATASET","Nome: "
-                                            + resposta.getNome_env()
+                                            + financiamento.getNome_env()
                                             + " - Valor: "
-                                            + resposta.getValor()
+                                            + financiamento.getValor()
                                             + " - Data: "
-                                            + resposta.getDate());
+                                            + financiamento.getDate());
                                 }
                             }
                         }
