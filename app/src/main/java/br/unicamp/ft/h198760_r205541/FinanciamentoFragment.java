@@ -49,10 +49,6 @@ public class FinanciamentoFragment extends Fragment {
     private Spinner         spinner;
     private ImageView       imageView;
 
-    //adapter antigo + interface - declaração
-    //private AdapterDoMal mAdapter;
-    private OnEditRequest onEditRequest;
-
     private DatabaseReference mFirebaseDatabaseReference;
 
     public FinanciamentoFragment() {
@@ -168,12 +164,6 @@ public class FinanciamentoFragment extends Fragment {
 
         spinner.setVisibility(View.INVISIBLE);
 
-        //recyclerView.setHasFixedSize(true);
-        //recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-        //mAdapter = new AdapterDoMal(Financiamentos.finan2s);
-        //recyclerView.setAdapter(mAdapter);
-
         cbTerm.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -189,7 +179,7 @@ public class FinanciamentoFragment extends Fragment {
             @Override
             public void onClick(View v) {
 
-                DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
                 Date d = new Date();
                 String date = dateFormat.format(d);
 
@@ -246,11 +236,6 @@ public class FinanciamentoFragment extends Fragment {
                     //consulta por limite de no max. 10
                     mFirebaseDatabaseReference.limitToLast(10);
 
-                   /*  //inserção antiga
-                    if(mAdapter.addItem(value, name, type, term, date)){
-                        Toast.makeText(getContext(), "ADD", Toast.LENGTH_SHORT).show();
-                    } */
-
                     clearEditText(); Toast.makeText(getContext(), "Adicionado", Toast.LENGTH_SHORT).show();
 
                 }catch (Exception err){
@@ -260,37 +245,8 @@ public class FinanciamentoFragment extends Fragment {
             }
         });
 
-        /* //remoçao antiga
-        mAdapter.setMyOnLongClickListener(new AdapterDoMal.MyOnLongClickListener() {
-            @Override
-            public void MyOnLongClick(int position) {
-                if(mAdapter.removeItem(position)){
-                    Toast.makeText(getContext(), "REMOVIDO", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-        /*
-
-        /* //Método do adapter antigo (Substituído pelo adapter do firebase)
-        mAdapter.setMyOnItemClickListener(new AdapterDoMal.MyOnItemClickListener() {
-            @Override
-            public void MyOnItemClick(int position) {
-                if(onEditRequest != null){
-                    onEditRequest.OnEditRequest(position);
-                }
-            }
-        });
-        */
-
         return v;
     }
-
-
-     //metodo antigo p/ instanciar a interface java
-    public void setOnEditRequest(OnEditRequest onEditRequest){
-        this.onEditRequest = onEditRequest;
-    }
-
 
     public void clearEditText(){
         etValue.getText().clear();

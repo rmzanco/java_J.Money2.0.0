@@ -62,17 +62,6 @@ public class MainActivity extends AppCompatActivity
 
         Fragment financiamento = new FinanciamentoFragment();
 
-        ((FinanciamentoFragment)financiamento).setOnEditRequest(new OnEditRequest() {
-            @Override
-            public void OnEditRequest(int position) {
-                Fragment edit = fragmentManager.findFragmentByTag("edit");
-                if(edit == null){
-                    edit = new EditFragment();
-                }
-                replaceFragment(edit, "edit");
-            }
-        });
-
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.add(R.id.placeHolder, financiamento, "financiamento");
         fragmentTransaction.commit();
