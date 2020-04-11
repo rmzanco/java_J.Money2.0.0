@@ -15,7 +15,6 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,8 +31,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import Interfaces.OnEditRequest;
-
 import static android.support.constraint.Constraints.TAG;
 
 /**
@@ -46,7 +43,7 @@ public class FinanciamentoFragment extends Fragment {
     private EditText        etValue;
     private RadioGroup      rgType;
     private CheckBox        cbTerm;
-    private Spinner         spinner;
+    private EditText        parcelas;
     private ImageView       imageView;
 
     private DatabaseReference mFirebaseDatabaseReference;
@@ -80,8 +77,7 @@ public class FinanciamentoFragment extends Fragment {
     private FirebaseRecyclerAdapter<Financiamento, FinancimentoViewHolder> mFirebaseAdapter;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.fragment_financiamento, container, false);
 
@@ -90,7 +86,7 @@ public class FinanciamentoFragment extends Fragment {
         etValue         = v.findViewById(R.id.etValue);
         rgType          = v.findViewById(R.id.rgType);
         cbTerm          = v.findViewById(R.id.cbTerm);
-        spinner         = v.findViewById(R.id.spinner);
+        parcelas        = v.findViewById(R.id.parcelas);
 
         mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
         SnapshotParser<Financiamento> parser = new SnapshotParser<Financiamento>() {
@@ -162,15 +158,15 @@ public class FinanciamentoFragment extends Fragment {
         mRecycler.setLayoutManager(llm);
         mRecycler.setAdapter(mFirebaseAdapter);
 
-        spinner.setVisibility(View.INVISIBLE);
+        parcelas.setVisibility(View.INVISIBLE);
 
         cbTerm.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
-                    spinner.setVisibility(View.VISIBLE);
+            public void onCheckedChanged(CompoundButton buttonView, boolean parceladoIsChecked) {
+                if(parceladoIsChecked){
+                    parcelas.setVisibility(View.VISIBLE);
                 }else{
-                    spinner.setVisibility(View.INVISIBLE);
+                    parcelas.setVisibility(View.INVISIBLE);
                 }
             }
         });
@@ -187,26 +183,21 @@ public class FinanciamentoFragment extends Fragment {
 
                 try{
 
-                    double  value    = Double.parseDouble((etValue.getText().toString()));
-                    String  name     = etNome.getText().toString().toLowerCase();
+                    double  value      = Double.parseDouble((etValue.getText().toString()));
+                    String  name       = etNome.getText().toString();
                     String  type;
-                    int     term     = 0;
+                    String strParcelas = parcelas.getText().toString();
 
-                    if(cbTerm.isChecked()){
-                        term = Integer.parseInt(spinner.getSelectedItem().toString());
-                    }
-
-                    if(id == R.id.rbDivida){
+                    if(isDivida(id)){
                         type = "divida";
                     }else{
                         type = "emprestimo";
                     }
 
-                    String strTerm = String.valueOf(term);
                     String strValue = String.valueOf(value);
 
                     //Enviar info ao DB
-                    Financiamento financiamento = new Financiamento(date, name, strTerm, strValue, type);
+                    Financiamento financiamento = new Financiamento(date, name, strParcelas, strValue, type);
                     mFirebaseDatabaseReference.child("Dados_do_Usuario").push().setValue(financiamento);
 
                     //Acessar info do DB
@@ -246,6 +237,10 @@ public class FinanciamentoFragment extends Fragment {
         });
 
         return v;
+    }
+
+    private boolean isDivida(int id) {
+        return id == R.id.rbDivida;
     }
 
     public void clearEditText(){

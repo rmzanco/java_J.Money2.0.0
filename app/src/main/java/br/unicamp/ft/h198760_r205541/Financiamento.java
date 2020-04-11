@@ -36,9 +36,7 @@ public class Financiamento {
         this.nome_env = nome_env;
     }
 
-    public String getParcela() {
-        return parcela;
-    }
+    public String getParcela() { return parcela; }
 
     public void setParcela(String parcela) {
         this.parcela = parcela;

@@ -79,12 +79,22 @@
                 android:layout_height="wrap_content"
                 android:text="Parcelado"/>
 
+            <!--
             <Spinner
 
                 android:id="@+id/spinner"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:entries="@array/spinner_values"/>
+                android:entries="@array/spinner_values"/> -->
+
+            <EditText
+                android:id="@+id/parcelas"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:inputType="number"
+                android:text="0"
+                android:singleLine="true" />
+            />
 
         </LinearLayout>
 
